@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/richa-p/birthdaybot/issues"
   },
-  "homepage": "https://github.com/richa-p/birthdaybot#readme"
+  "homepage": "https://github.com/richa-p/birthdaybot#readme",
+  "dependencies": {
+    "node-cron": "^1.2.1"
+  }
 }
