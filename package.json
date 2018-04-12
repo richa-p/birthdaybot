@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/richa-p/birthdaybot#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "node-cron": "^1.2.1"
   }
 }
