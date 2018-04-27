@@ -2,6 +2,7 @@ const env = require('process').env
 const axios = require('axios')
 const CronJob = require('cron').CronJob
 const aws = require('aws-sdk')
+const moment = require('moment')
 
 const url = env.SLACK_INCOMING_WEBHOOK_BOT_TESTING
 
@@ -16,25 +17,44 @@ const params = {
 }
 
 function getBirthdayList() {
-    s3.getObject(params, (err, data) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            console.log("Found:", JSON.parse(data.Body.toString()))
-        }
+    return new Promise ((resolve, reject) => {
+        s3.getObject(params, (err, data) => {
+            if(err) {
+                reject(err)
+            }
+            else {
+                resolve(JSON.parse(data.Body.toString()))
+            }
+        })
     })
 }
 
 const body = {
     text: 'Hello!',
-    username: 'Chetna'
+    username: 'Testing'
 };
 
 
-let job = new CronJob('00 16 15 * * 1-5', function () {
-    getBirthdayList();
-	axios.post(url, body).then((response) => console.log(response)).catch((err) => console.log(err))
+// let job = new CronJob('00 16 15 * * 1-5', function () {
+let job = new CronJob('*/2 * * * * 1-5', function () {
+    getBirthdayList().then((birthdays) => {
+        let now = moment();
+        let month = now.format('MMMM');
+        let day = now.date();
+        day = 23
+        // console.log(birthdays)
+        let isBirthdayToday = (birthday) => birthday.birthDay === day && birthday.birthMonth === month;
+        let toFullName = (birthday) => `${birthday.firstName} ${birthday.lastName}`;
+        let fullNames = birthdays.filter(isBirthdayToday).map(toFullName);
+        fullNames.forEach((fullName) => {
+            console.log(`Happy birthday ${fullName}`)
+        })
+
+    }).catch((err) => {
+        console.log('Error!', err)
+    })
+
+	// axios.post(url, body).then((response) => console.log(response)).catch((err) => console.log(err))
   }, function () {
     /* This function is executed when the job stops */
   },
