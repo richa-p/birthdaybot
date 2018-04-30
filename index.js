@@ -16,10 +16,10 @@ const params = {
     Key: env.S3_FILE_PATH
 }
 
-function getBirthdayList() {
-    return new Promise ((resolve, reject) => {
+function getAllBirthdays() {
+    return new Promise((resolve, reject) => {
         s3.getObject(params, (err, data) => {
-            if(err) {
+            if (err) {
                 reject(err)
             }
             else {
@@ -29,6 +29,45 @@ function getBirthdayList() {
     })
 }
 
+function filterBirthdays(moment, birthdays) {
+    let isBirthdayToday = (birthday) => birthday.birthDay === moment.date() && birthday.birthMonth === moment.format('MMMM');
+    return birthdays.filter(isBirthdayToday);
+}
+
+function getBirthdayList() {
+    getAllBirthdays().then((birthdays) => {
+        const now = moment();
+        now.date(23);
+        const todaysBirthdays = filterBirthdays(now, birthdays);
+        let weekendBirthdays = [];
+        if (now.day() === 1) {
+            weekendBirthdays = checkForWeekendBirthdays(now, birthdays);
+        }
+        const messages = [];
+        todaysBirthdays.forEach((birthday) => {
+            messages.push(`Happy birthday ${birthday.firstName} ${birthday.lastName}`);
+        })
+        if (weekendBirthdays.length > 0) {
+            messages.push('\nWe missed wishing you over the weekend..')
+        }
+        weekendBirthdays.forEach((birthday) => {
+            messages.push(`Belated Happy birthday ${birthday.firstName} ${birthday.lastName} (${birthday.birthDay} ${birthday.birthMonth})`);
+        })
+        messages.forEach((message) => {
+            console.log(message);
+        })
+    }).catch((err) => {
+        console.log('Error!', err)
+    })
+}
+
+function checkForWeekendBirthdays(now, birthdays) {
+    //console.log(birthdays);
+    const sunBirthdays = filterBirthdays(now.subtract(1, 'days'), birthdays);
+    const satBirthdays = filterBirthdays(now.subtract(1, 'days'), birthdays);
+    return sunBirthdays.concat(satBirthdays);
+}
+
 const body = {
     text: 'Hello!',
     username: 'Testing'
@@ -36,31 +75,12 @@ const body = {
 
 
 // let job = new CronJob('00 16 15 * * 1-5', function () {
-const startNow = true;
-const timeZone = 'America/Chicago';
-const onStop = () => {};
-
 let job = new CronJob('*/2 * * * * 1-5', function () {
-    getBirthdayList().then((birthdays) => {
-        let now = moment();
-        let month = now.format('MMMM');
-        let day = now.date();
-        day = 23
-        // console.log(birthdays)
-        let isBirthdayToday = (birthday) => birthday.birthDay === day && birthday.birthMonth === month;
-        let toFullName = (birthday) => `${birthday.firstName} ${birthday.lastName}`;
-        let fullNames = birthdays.filter(isBirthdayToday).map(toFullName);
-        fullNames.forEach((fullName) => {
-            console.log(`Happy birthday ${fullName}`)
-        })
-
-    }).catch((err) => {
-        console.log('Error!', err)
-    })
-
-	// axios.post(url, body).then((response) => console.log(response)).catch((err) => console.log(err))
-  }, 
-  onStop,
-  startNow,
-  timeZone
+        getBirthdayList();
+        // axios.post(url, body).then((response) => console.log(response)).catch((err) => console.log(err))
+    }, function () {
+        /* This function is executed when the job stops */
+    },
+    true, /* Start the job right now */
+    'America/Chicago' /* Time zone of this job. */
 );
