@@ -36,6 +36,10 @@ const body = {
 
 
 // let job = new CronJob('00 16 15 * * 1-5', function () {
+const startNow = true;
+const timeZone = 'America/Chicago';
+const onStop = () => {};
+
 let job = new CronJob('*/2 * * * * 1-5', function () {
     getBirthdayList().then((birthdays) => {
         let now = moment();
@@ -55,9 +59,8 @@ let job = new CronJob('*/2 * * * * 1-5', function () {
     })
 
 	// axios.post(url, body).then((response) => console.log(response)).catch((err) => console.log(err))
-  }, function () {
-    /* This function is executed when the job stops */
-  },
-  true, /* Start the job right now */
-  'America/Chicago' /* Time zone of this job. */
+  }, 
+  onStop,
+  startNow,
+  timeZone
 );
