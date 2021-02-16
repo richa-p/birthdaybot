@@ -23,7 +23,7 @@
   "homepage": "https://github.com/richa-p/birthdaybot#readme",
   "dependencies": {
     "aws-sdk": "^2.229.1",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "cron": "^1.3.0",
     "moment": "^2.22.1"
   }
