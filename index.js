@@ -1,3 +1,4 @@
+console.log('Testing GHAPP integration')
 const env = require('process').env
 const axios = require('axios')
 const CronJob = require('cron').CronJob
